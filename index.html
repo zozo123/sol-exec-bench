@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>One Lab Per Kernel · Running the SOL-ExecBench research loop on Islo</title>
+  <meta name="description" content="A technical design for running KDA, Humanize, Omnigent, Claude, and Codex as a reproducible GPU-kernel research campaign on Islo.">
+  <meta name="author" content="Yossi Eliaz">
+  <meta name="theme-color" content="#10110f">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <link rel="canonical" href="https://zozo123.github.io/sol-exec-bench/">
+
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="One Lab Per Kernel">
+  <meta property="og:title" content="One Lab Per Kernel">
+  <meta property="og:description" content="Databricks showed the loop can win. Here is the Islo architecture for turning it into a reproducible kernel research factory.">
+  <meta property="og:url" content="https://zozo123.github.io/sol-exec-bench/">
+  <meta property="og:image" content="https://zozo123.github.io/sol-exec-bench/og.png">
+  <meta property="og:image:width" content="1536">
+  <meta property="og:image:height" content="1024">
+  <meta property="og:image:alt" content="One Lab Per Kernel — an autonomous kernel research campaign on Islo">
+  <meta property="article:published_time" content="2026-07-28T00:00:00+03:00">
+  <meta property="article:author" content="Yossi Eliaz">
+  <meta property="article:section" content="Engineering">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="One Lab Per Kernel">
+  <meta name="twitter:description" content="A technical design for running an autonomous SOL-ExecBench campaign on Islo.">
+  <meta name="twitter:image" content="https://zozo123.github.io/sol-exec-bench/og.png">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "One Lab Per Kernel",
+    "alternativeHeadline": "Running the SOL-ExecBench research loop on Islo",
+    "description": "A technical design for running KDA, Humanize, Omnigent, Claude, and Codex as a reproducible GPU-kernel research campaign on Islo.",
+    "datePublished": "2026-07-28",
+    "dateModified": "2026-07-28",
+    "author": {
+      "@type": "Person",
+      "name": "Yossi Eliaz",
+      "url": "https://github.com/zozo123"
+    },
+    "mainEntityOfPage": "https://zozo123.github.io/sol-exec-bench/",
+    "image": "https://zozo123.github.io/sol-exec-bench/og.png",
+    "keywords": "SOL-ExecBench, CUDA, GPU kernels, autonomous agents, KDA, Humanize, Omnigent, Islo, B200"
+  }
+  </script>
+
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=Manrope:wght@400;500;600;700;800&amp;family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="progress" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <a class="wordmark" href="#top" aria-label="One Lab Per Kernel, back to top">
+      <span class="signal" aria-hidden="true"></span>
+      <span>ONE LAB / KERNEL</span>
+    </a>
+    <nav aria-label="Article navigation">
+      <a href="#signals">Signals</a>
+      <a href="#inventory">Inventory</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#campaign">Campaign</a>
+    </nav>
+    <a class="top-cta" href="https://github.com/zozo123/sol-exec-bench">Source <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">FIELD NOTE 01 · GPU AGENT SYSTEMS · JULY 2026</p>
+        <h1>One lab<br>per kernel.</h1>
+        <p class="dek">Databricks put KDA, Humanize, and Omnigent on NVIDIA’s L1 leaderboard and reached the top. The result gives us a practical blueprint for a persistent, reviewable kernel-research campaign on Islo.</p>
+        <div class="byline">
+          <span>Yossi Eliaz</span>
+          <span>14 min read</span>
+          <span class="proposal">Design proposal</span>
+        </div>
+      </div>
+
+      <aside class="scoreboard" aria-label="Current SOL-ExecBench L1 leaderboard snapshot">
+        <div class="score-head">
+          <span>L1 · SINGLE OPERATIONS</span>
+          <span>B200 · STACK V1.1</span>
+        </div>
+        <ol>
+          <li class="bound"><span class="rank">—</span><strong>SOL bound</strong><code>1.000000</code></li>
+          <li class="leader"><span class="rank">1</span><strong>Databricks</strong><code>0.751491</code></li>
+          <li><span class="rank">2</span><strong>ac4k</strong><code>0.751196</code></li>
+          <li><span class="rank">3</span><strong>Amir M. Mir</strong><code>0.726700</code></li>
+          <li><span class="rank">4</span><strong>doubleAI</strong><code>0.726542</code></li>
+          <li><span class="rank">5</span><strong>Recursive</strong><code>0.702958</code></li>
+          <li><span class="rank">6</span><strong>Cursor</strong><code>0.540380</code></li>
+          <li class="baseline"><span class="rank">—</span><strong>Scoring baseline</strong><code>0.500000</code></li>
+        </ol>
+        <p>Official leaderboard snapshot, 28 Jul 2026. Scores move as the evaluation stack evolves.</p>
+      </aside>
+    </section>
+
+    <section class="opening">
+      <div class="opening-number" aria-hidden="true">0.000295</div>
+      <div class="opening-copy">
+        <p class="lead">That is the distance between first and second place across a collection of 94 kernels.</p>
+        <p>At this margin, the system around the model matters at the level of individual trials. A single failed workload, an unstable measurement, or a B200 hour spent repeating a dead idea can change the collection score.</p>
+        <p>Databricks disclosed a compact stack: <a href="https://github.com/mit-han-lab/kernel-design-agents">KDA</a> supplies the kernel workflow; <a href="https://github.com/PolyArch/humanize">Humanize</a> runs the iterative implementation and review protocol; <a href="https://github.com/omnigent-ai/omnigent">Omnigent</a> coordinates harnesses; Claude implements; Codex reviews. The team gave these agents enough structure to work autonomously for long stretches.</p>
+        <p>This field note turns that disclosure into an Islo system design. It separates capabilities already available from the small amount of integration work still required. It also defines the evidence the first campaign should return.</p>
+      </div>
+    </section>
+
+    <div class="article-grid">
+      <aside class="rail" aria-label="Table of contents">
+        <p class="rail-label">CONTENTS</p>
+        <ol>
+          <li><a href="#signals">Four signals</a></li>
+          <li><a href="#inventory">What Islo has</a></li>
+          <li><a href="#architecture">System design</a></li>
+          <li><a href="#candidate">Candidate lifecycle</a></li>
+          <li><a href="#verification">Verification</a></li>
+          <li><a href="#scheduling">Scheduling</a></li>
+          <li><a href="#memory">Outer loop</a></li>
+          <li><a href="#campaign">First campaign</a></li>
+        </ol>
+        <a class="rail-link" href="https://islo.dev/">islo.dev ↗</a>
+      </aside>
+
+      <article>
+        <section id="signals" class="article-section">
+          <p class="section-index">01 / PUBLIC SIGNALS</p>
+          <h2>Four systems, four pieces of the machine</h2>
+          <p class="section-intro">The public SOL-ExecBench work already isolates the capabilities a serious kernel campaign needs. The numbers below come from different dates, evaluation stacks, and metric slices. Each result should be read within its original experiment.</p>
+
+          <div class="signal-list">
+            <div class="signal-row">
+              <div class="signal-name">
+                <span class="signal-no">A</span>
+                <h3>Cursor</h3>
+              </div>
+              <div class="signal-evidence">
+                <strong>Fleet search</strong>
+                <p>A planner distributed and rebalanced 235 problems across autonomous workers on 27 B200 GPUs. The run lasted three weeks and reported a 1.38× geomean speedup over its baseline.</p>
+              </div>
+              <p class="signal-lesson">Keep the worker contract small. Rebalance compute using live performance evidence.</p>
+            </div>
+
+            <div class="signal-row">
+              <div class="signal-name">
+                <span class="signal-no">B</span>
+                <h3>doubleAI</h3>
+              </div>
+              <div class="signal-evidence">
+                <strong>Adversarial verification</strong>
+                <p>WarpSpeed reported beating optimized baselines on 90% of 235 problems at 2.24× geomean speedup after one day of search. Its follow-up exposed kernels that passed fixed tests while failing on fresh seeds, unseen shapes, and realistic token distributions.</p>
+              </div>
+              <p class="signal-lesson">The verifier controls the meaning of every speedup. Hidden distributions belong in the evaluator.</p>
+            </div>
+
+            <div class="signal-row">
+              <div class="signal-name">
+                <span class="signal-no">C</span>
+                <h3>Recursive</h3>
+              </div>
+              <div class="signal-evidence">
+                <strong>Cross-task memory</strong>
+                <p>Many research threads ran jointly across all 235 kernels, retaining useful context and combining promising branches. Recursive reported a mean SOL score of 0.754 across the full benchmark.</p>
+              </div>
+              <p class="signal-lesson">Verified techniques should travel between related tasks while candidate code stays isolated.</p>
+            </div>
+
+            <div class="signal-row">
+              <div class="signal-name">
+                <span class="signal-no">D</span>
+                <h3>Databricks</h3>
+              </div>
+              <div class="signal-evidence">
+                <strong>Durable writer–reviewer loop</strong>
+                <p>KDA, Humanize, and Omnigent combined Claude implementation with independent Codex review. The current public L1 leaderboard shows Databricks first at 0.751491.</p>
+              </div>
+              <p class="signal-lesson">Long-horizon work benefits from explicit roles, state on disk, and a review gate that can reject completion.</p>
+            </div>
+          </div>
+
+          <aside class="margin-note">
+            <span>RESEARCH HYGIENE</span>
+            <p>ac4k and Amir M. Mir / SF Tensor also sit near the top of L1. Their leaderboard positions are public; their internal architectures are not. This design does not infer systems from names or scores.</p>
+          </aside>
+        </section>
+
+        <section id="inventory" class="article-section">
+          <p class="section-index">02 / INVENTORY</p>
+          <h2>The infrastructure is mostly here</h2>
+          <p class="section-intro">Islo already exposes the execution primitives behind the loop. The first version needs a B200 evaluator adapter and a campaign scheduler; the agent runtime itself can be assembled from current capabilities.</p>
+
+          <div class="inventory">
+            <div class="inventory-item">
+              <span class="status current">CURRENT</span>
+              <h3>Persistent isolated computers</h3>
+              <p>One microVM per kernel preserves repositories, compiler caches, Humanize state, failed attempts, and profiler artifacts across disconnects.</p>
+            </div>
+            <div class="inventory-item">
+              <span class="status current">CURRENT</span>
+              <h3>Claude and Codex harnesses</h3>
+              <p>Both agents run natively. Omnigent can sit above them for shared sessions, harness switching, monitoring, and human intervention.</p>
+            </div>
+            <div class="inventory-item">
+              <span class="status current">CURRENT</span>
+              <h3>Durable parameterized jobs</h3>
+              <p>Jobs provide versioned manifests, typed parameters, timeouts, concurrency, lifecycle policies, logs, and repeatable execution.</p>
+            </div>
+            <div class="inventory-item">
+              <span class="status current">CURRENT</span>
+              <h3>Snapshots</h3>
+              <p>Every experiment can start from the same pinned KDA, Humanize, Omnigent, toolchain, dataset, prompt, and playbook version.</p>
+            </div>
+            <div class="inventory-item">
+              <span class="status current">CURRENT</span>
+              <h3>Scoped gateways</h3>
+              <p>Host, path, method, response filter, rate, and credential rules give the sandbox access to model APIs and the evaluator without exposing secrets.</p>
+            </div>
+            <div class="inventory-item">
+              <span class="status current">CURRENT</span>
+              <h3>Audit and replay</h3>
+              <p>Agent sessions and commands remain inspectable. Candidate manifests connect model activity to evaluator evidence.</p>
+            </div>
+            <div class="inventory-item">
+              <span class="status add">ADD</span>
+              <h3>B200 evaluator adapter</h3>
+              <p>The public Islo resource schema currently exposes CPU, memory, disk, snapshots, and lifecycle. A narrow API connects the labs to an external or BYOC B200 pool.</p>
+            </div>
+            <div class="inventory-item">
+              <span class="status add">ADD</span>
+              <h3>Campaign scheduler</h3>
+              <p>A small service ranks queued experiments by expected collection-score gain per B200 minute and enforces campaign budgets.</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="architecture" class="article-section wide-section">
+          <p class="section-index">03 / SYSTEM DESIGN</p>
+          <h2>The CPU side thinks. The B200 side decides.</h2>
+          <p class="section-intro">The evaluator is a trust boundary. Agents can design any candidate within the task contract. Only the evaluator can issue a result eligible for promotion.</p>
+
+          <figure class="architecture" aria-labelledby="architecture-caption">
+            <div class="arch-controller">
+              <span class="node-tag">CONTROL</span>
+              <strong>Campaign controller</strong>
+              <small>budget · priority · playbook version</small>
+            </div>
+
+            <div class="arch-arrow vertical" aria-hidden="true">↓</div>
+
+            <div class="arch-labs">
+              <div class="lab-node">
+                <span class="node-tag">ISLO LAB 011</span>
+                <strong>KDA researcher</strong>
+                <small>Claude · Humanize · Codex</small>
+              </div>
+              <div class="lab-node">
+                <span class="node-tag">ISLO LAB 013</span>
+                <strong>KDA researcher</strong>
+                <small>Claude · Humanize · Codex</small>
+              </div>
+              <div class="lab-node muted-node">
+                <span class="node-tag">ISLO LAB …</span>
+                <strong>up to 94 labs</strong>
+                <small>pause · resume · snapshot</small>
+              </div>
+            </div>
+
+            <div class="gateway-line">
+              <span>content hash + manifest</span>
+              <strong>ISLO GATEWAY</strong>
+              <span>signed evidence</span>
+            </div>
+
+            <div class="arch-evaluator">
+              <div>
+                <span class="node-tag">TRUSTED GPU PLANE</span>
+                <strong>B200 evaluator pool</strong>
+                <small>compile → correct → benchmark → profile</small>
+              </div>
+              <ol>
+                <li>Fresh container</li>
+                <li>Fixed harness</li>
+                <li>Hidden tests</li>
+                <li>Locked clocks</li>
+              </ol>
+            </div>
+
+            <div class="arch-arrow vertical" aria-hidden="true">↓</div>
+
+            <div class="arch-ledger">
+              <span class="node-tag">DURABLE EVIDENCE</span>
+              <strong>Candidate ledger</strong>
+              <small>source · environment · workloads · latency · variance · verdict · lineage</small>
+            </div>
+            <figcaption id="architecture-caption">Agents own hypotheses and source code. The evaluator owns correctness, measurement, and promotion evidence.</figcaption>
+          </figure>
+
+          <div class="code-block">
+            <div class="code-head">
+              <span>jobs/sol-kernel/job.toml</span>
+              <button type="button" data-copy="job-code">Copy</button>
+            </div>
+            <pre id="job-code"><code>[job.params.kernel_id]
+type = "string"
+required = true
+
+[job.params.playbook_version]
+type = "string"
+default = "kda-b200-v1"
+
+[run]
+timeout = "12h"
+teardown_on_complete = false
+
+[run.sandbox]
+mode = "ensure"
+name = "sol-l1-{kernel_id}"
+snapshot_name = "sol-kda-b200-v1"
+gateway_profile = "sol-kda"
+vcpus = 4
+memory_mb = 8192
+disk_gb = 40
+
+[[run.tasks]]
+name = "optimize"
+
+[[run.tasks.steps]]
+exec = ["./campaign/run-kernel",
+        "--kernel", "{kernel_id}",
+        "--playbook", "{playbook_version}"]</code></pre>
+          </div>
+        </section>
+
+        <section id="candidate" class="article-section">
+          <p class="section-index">04 / INNER LOOP</p>
+          <h2>The life of one candidate</h2>
+          <p class="section-intro">Each round leaves enough state for another engineer—or another model—to reconstruct the decision.</p>
+
+          <ol class="lifecycle">
+            <li>
+              <span>01</span>
+              <div><strong>Classify the bottleneck</strong><p>Memory traffic, tensor-core utilization, occupancy, reduction structure, launch latency, or fusion headroom.</p></div>
+              <code>analysis.md</code>
+            </li>
+            <li>
+              <span>02</span>
+              <div><strong>State one hypothesis</strong><p>The expected mechanism, affected workload buckets, and the profiler signal that would support it.</p></div>
+              <code>hypothesis.json</code>
+            </li>
+            <li>
+              <span>03</span>
+              <div><strong>Implement a focused candidate</strong><p>Source, compiler flags, parent candidate, task contract, and environment version become its identity.</p></div>
+              <code>candidate.sha</code>
+            </li>
+            <li>
+              <span>04</span>
+              <div><strong>Run correctness first</strong><p>All public and hidden workloads, fresh seeds, numerical checks, fallback coverage, and output sanity.</p></div>
+              <code>verdict.json</code>
+            </li>
+            <li>
+              <span>05</span>
+              <div><strong>Measure reproducibly</strong><p>Warmups, repeated trials, cache clearing, locked clocks, identical ABI, and measurement variance.</p></div>
+              <code>benchmark.json</code>
+            </li>
+            <li>
+              <span>06</span>
+              <div><strong>Review the claim</strong><p>Codex checks scope, evidence, specialization, physical plausibility, and overlap with failed ideas.</p></div>
+              <code>review.md</code>
+            </li>
+            <li>
+              <span>07</span>
+              <div><strong>Promote, branch, or stop</strong><p>The scheduler considers score gain, B200 cost, remaining headroom, and the next defensible experiment.</p></div>
+              <code>decision.json</code>
+            </li>
+          </ol>
+
+          <div class="evidence-sample">
+            <div class="evidence-title">
+              <span>CANDIDATE RECEIPT</span>
+              <code>sha256:8f0c…91d2</code>
+            </div>
+            <dl>
+              <div><dt>kernel</dt><dd>013_fused_residual_rms_norm_backward</dd></div>
+              <div><dt>correctness</dt><dd class="pass">PASS · 16/16 public · 48/48 hidden</dd></div>
+              <div><dt>candidate SOL</dt><dd>0.7842</dd></div>
+              <div><dt>previous best</dt><dd>0.7719</dd></div>
+              <div><dt>replications</dt><dd>3 · max CV 0.41%</dd></div>
+              <div><dt>promotion</dt><dd class="pending">REVIEW REQUIRED</dd></div>
+            </dl>
+            <p>Illustrative schema. Values demonstrate the artifact contract; they are not campaign results.</p>
+          </div>
+        </section>
+
+        <section id="verification" class="article-section">
+          <p class="section-index">05 / VERIFICATION</p>
+          <h2>The evaluator defines what “fast” means</h2>
+          <p class="section-intro">doubleAI’s public analysis is the clearest warning in the benchmark. A kernel can satisfy a fixed verifier and still corrupt the workload it was built to accelerate.</p>
+
+          <p>One published embedding-gradient kernel accumulated repeated updates directly in BF16. Uniformly sampled token IDs rarely collided, so the verifier accepted the result. Natural text follows a heavy-tailed distribution; frequent tokens collide hundreds of times and expose accumulated rounding bias. Training diverged under one optimizer while another optimizer masked the error.</p>
+
+          <p>The B200 evaluator should therefore maintain two contracts:</p>
+
+          <div class="contract-split">
+            <div>
+              <span class="contract-label">PUBLIC CONTRACT</span>
+              <h3>Fast local feedback</h3>
+              <ul>
+                <li>Published shapes and tolerances</li>
+                <li>Deterministic smoke tests</li>
+                <li>Compiler and launch diagnostics</li>
+                <li>Coarse benchmark signal</li>
+              </ul>
+            </div>
+            <div>
+              <span class="contract-label hidden-label">HIDDEN CONTRACT</span>
+              <h3>Promotion evidence</h3>
+              <ul>
+                <li>Fresh RNG seeds and held-out shapes</li>
+                <li>Realistic heavy-tailed distributions</li>
+                <li>Accumulator-precision stress cases</li>
+                <li>Fallback and adjacent-shape checks</li>
+                <li>End-to-end workload spot checks</li>
+              </ul>
+            </div>
+          </div>
+
+          <p>The agent can inspect failures and iterate. It cannot inspect hidden inputs, alter evaluator code, select favorable trials, or publish its own score. Each promotion receipt includes the evaluator version and content hash so a later campaign can reproduce the verdict.</p>
+        </section>
+
+        <section id="scheduling" class="article-section">
+          <p class="section-index">06 / SCHEDULING</p>
+          <h2>Spend B200 minutes where they move the collection</h2>
+          <p class="section-intro">Agent computers can remain highly parallel. GPU evaluation is the scarce serializing resource, so the queue needs an explicit objective.</p>
+
+          <div class="formula" role="img" aria-label="Priority equals expected change in collection SOL score divided by expected B200 minutes">
+            <span>priority</span>
+            <span class="equals">=</span>
+            <span class="fraction"><b>expected Δ collection SOL</b><i></i><b>expected B200 minutes</b></span>
+          </div>
+
+          <p>Coverage comes first. A failed kernel contributes zero to the collection average; even a baseline-level correct kernel contributes roughly 0.5. Once every task has a defensible candidate, the scheduler shifts toward measured marginal gain.</p>
+
+          <p>A kernel near its analytical bound may justify one carefully targeted experiment. A kernel with large headroom and a clear NCU signal may justify ten. A kernel whose last five distinct hypotheses produced noise should pause and release its budget.</p>
+
+          <div class="scheduler-grid">
+            <div>
+              <span>QUEUE INPUT</span>
+              <code>best SOL</code>
+              <code>remaining headroom</code>
+              <code>last N deltas</code>
+              <code>review confidence</code>
+              <code>expected eval cost</code>
+            </div>
+            <div>
+              <span>HARD LIMITS</span>
+              <code>candidate attempts</code>
+              <code>model spend</code>
+              <code>B200 minutes</code>
+              <code>wall-clock deadline</code>
+              <code>human interventions</code>
+            </div>
+            <div>
+              <span>STOP STATES</span>
+              <code>target reached</code>
+              <code>plateau</code>
+              <code>no valid hypothesis</code>
+              <code>unstable evaluator</code>
+              <code>budget exhausted</code>
+            </div>
+          </div>
+        </section>
+
+        <section id="memory" class="article-section">
+          <p class="section-index">07 / OUTER LOOP</p>
+          <h2>Let evidence teach the next lab</h2>
+          <p class="section-intro">The inner loop improves a kernel. The outer loop improves the search policy used by future labs.</p>
+
+          <p>Completed tasks emit small, structured lessons: which tiling family worked, which NCU signal predicted the gain, where numerical stability failed, which shape bucket needed specialization, and which fallback preserved generality.</p>
+
+          <div class="lesson-card">
+            <div class="lesson-head">
+              <span>VERIFIED LESSON</span>
+              <span>normalization / B200 / BF16</span>
+            </div>
+            <dl>
+              <div><dt>Observation</dt><dd>A second HBM pass dominated medium contiguous rows.</dd></div>
+              <div><dt>Successful move</dt><dd>Fuse variance reduction and affine application; vectorize 16-byte stores.</dd></div>
+              <div><dt>Failure boundary</dt><dd>Persistent blocks regressed rows below 2K elements.</dd></div>
+              <div><dt>Evidence</dt><dd>3 replicated benchmarks + DRAM and memory-pipe NCU counters.</dd></div>
+              <div><dt>Applies when</dt><dd>BF16, contiguous rows, 2K–16K elements, exact accumulation contract.</dd></div>
+            </dl>
+          </div>
+
+          <p>A curator proposes a new playbook from these lessons. Promotion requires an A/B campaign from identical Islo snapshots on held-out kernels, with equal model and GPU budgets. A stronger playbook must improve correctness, collection SOL, or cost efficiency without increasing verifier failures.</p>
+
+          <div class="promotion-loop" aria-label="Playbook promotion sequence">
+            <div><b>v17</b><span>current playbook</span></div>
+            <span aria-hidden="true">→</span>
+            <div><b>Δ</b><span>verified lessons</span></div>
+            <span aria-hidden="true">→</span>
+            <div><b>A/B</b><span>held-out kernels</span></div>
+            <span aria-hidden="true">→</span>
+            <div class="promote"><b>v18</b><span>promote or reject</span></div>
+          </div>
+        </section>
+
+        <section id="campaign" class="article-section campaign-section">
+          <p class="section-index">08 / FIRST CAMPAIGN</p>
+          <h2>Eight kernels are enough to prove the system</h2>
+          <p class="section-intro">The first run should validate autonomy, evidence quality, and transfer before spending a full 94-kernel budget.</p>
+
+          <div class="campaign-plan">
+            <div class="campaign-column">
+              <span class="column-label">TASK SET</span>
+              <h3>8 L1 kernels</h3>
+              <ul>
+                <li>2 elementwise / vectorized</li>
+                <li>2 reduction / normalization</li>
+                <li>2 projection / GEMM</li>
+                <li>2 backward operations</li>
+              </ul>
+            </div>
+            <div class="campaign-column">
+              <span class="column-label">CONFIGURATIONS</span>
+              <h3>3 controlled runs</h3>
+              <ol>
+                <li>KDA + Claude</li>
+                <li>KDA + Humanize + Codex review</li>
+                <li>Same loop + verified cross-kernel memory</li>
+              </ol>
+            </div>
+            <div class="campaign-column">
+              <span class="column-label">SCORECARD</span>
+              <h3>7 measured outputs</h3>
+              <ul>
+                <li>Final SOL score</li>
+                <li>Correct candidates / 100 attempts</li>
+                <li>B200 minutes / promoted gain</li>
+                <li>Human interventions / kernel</li>
+                <li>Repeated failed directions</li>
+                <li>Reviewer-caused corrections</li>
+                <li>Transfer from playbook memory</li>
+              </ul>
+            </div>
+          </div>
+
+          <h3 class="output-title">What the campaign returns</h3>
+          <div class="outputs">
+            <div><span>01</span><strong>An Islo KDA snapshot</strong><p>Pinned tools, harnesses, prompts, task contract, and evaluator client.</p></div>
+            <div><span>02</span><strong>A durable job</strong><p>One parameterized manifest that can launch, resume, and budget any kernel lab.</p></div>
+            <div><span>03</span><strong>A B200 evidence API</strong><p>Content-addressed candidates, hidden verification, reproducible timing, and signed receipts.</p></div>
+            <div><span>04</span><strong>A campaign ledger</strong><p>Every hypothesis, failure, review, benchmark, promotion, and lineage edge.</p></div>
+            <div><span>05</span><strong>A measured harness comparison</strong><p>Evidence for the value of independent review and shared memory under equal budgets.</p></div>
+            <div><span>06</span><strong>A go / no-go decision</strong><p>A defensible basis for expanding from eight labs to the complete L1 collection.</p></div>
+          </div>
+
+          <div class="closing">
+            <p class="closing-small">THE BUILD</p>
+            <p class="closing-line">One persistent lab per kernel.<br>One trusted B200 verdict per candidate.<br>One playbook that earns every upgrade.</p>
+            <p>Islo already has the computers, jobs, snapshots, gateways, harness access, and audit trail. The first implementation adds the evaluator adapter and the campaign scheduler, then measures the complete loop on eight kernels.</p>
+            <div class="closing-actions">
+              <a class="primary-action" href="https://islo.dev/">Explore Islo <span aria-hidden="true">↗</span></a>
+              <a href="https://github.com/zozo123/sol-exec-bench">Read the source <span aria-hidden="true">↗</span></a>
+            </div>
+          </div>
+        </section>
+
+        <section class="sources">
+          <p class="section-index">SOURCES</p>
+          <h2>Primary material</h2>
+          <ol>
+            <li><a href="https://research.nvidia.com/benchmarks/sol-execbench/blog/introducing-sol-execbench">NVIDIA — Introducing SOL-ExecBench</a></li>
+            <li><a href="https://research.nvidia.com/benchmarks/sol-execbench/collection/1">NVIDIA — L1 Single Operations leaderboard</a></li>
+            <li><a href="https://www.linkedin.com/posts/yuchen-jin-11b329a1_databricks-ranks-1-on-nvidias-sol-execbench-activity-7478296509302898688--3my">Yuchen Jin — Databricks L1 result and disclosed stack</a></li>
+            <li><a href="https://github.com/mit-han-lab/kernel-design-agents">MIT HAN Lab — Kernel Design Agents</a></li>
+            <li><a href="https://github.com/PolyArch/humanize">PolyArch — Humanize / RLCR</a></li>
+            <li><a href="https://github.com/omnigent-ai/omnigent">Omnigent — multi-harness agent framework</a></li>
+            <li><a href="https://cursor.com/blog/multi-agent-kernels">Cursor — Speeding up GPU kernels by 38% with a multi-agent system</a></li>
+            <li><a href="https://www.doubleai.com/research/warpspeed-approaches-speed-of-light-on-blackwell">doubleAI — WarpSpeed approaches Speed of Light on Blackwell</a></li>
+            <li><a href="https://www.recursive.com/articles/first-steps-toward-automated-ai-research">Recursive — First Steps Toward Automated AI Research</a></li>
+            <li><a href="https://docs.islo.dev/concepts/automations">Islo — durable jobs and automations</a></li>
+            <li><a href="https://docs.islo.dev/cli/gateways">Islo — scoped gateways and credential injection</a></li>
+          </ol>
+          <p class="disclosure">This article proposes an implementation. It does not claim an Islo SOL-ExecBench run or benchmark result. Reported third-party numbers retain their original scope and date.</p>
+        </section>
+      </article>
+    </div>
+  </main>
+
+  <footer>
+    <div>
+      <strong>ONE LAB PER KERNEL</strong>
+      <span>A technical field note by Yossi Eliaz</span>
+    </div>
+    <div>
+      <a href="https://islo.dev/">islo.dev</a>
+      <a href="https://github.com/zozo123">GitHub</a>
+      <a href="#top">Back to top ↑</a>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
