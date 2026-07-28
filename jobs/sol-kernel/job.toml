@@ -1,0 +1,43 @@
+[job]
+name = "sol-kernel"
+version = "0.1.0"
+description = "Persistent CPU research workspace for one SOL-ExecBench kernel"
+
+[job.params.kernel_id]
+type = "string"
+required = true
+
+[job.params.playbook_version]
+type = "string"
+default = "kda-b200-v1"
+
+[run]
+timeout = "12h"
+teardown_on_complete = false
+
+[run.sandbox]
+mode = "ensure"
+name = "sol-l1-{kernel_id}"
+image = "ghcr.io/islo-labs/islo-runner:latest"
+snapshot_name = "sol-kda-b200-v1"
+gateway_profile = "sol-kda"
+init = { type = "full" }
+vcpus = 4
+memory_mb = 8192
+disk_gb = 40
+
+[run.sandbox.lifecycle]
+pause_after_idle = 1800
+
+[[run.tasks]]
+name = "optimize"
+
+[[run.tasks.steps]]
+name = "run-campaign"
+exec = [
+  "./campaign/run-kernel",
+  "--kernel",
+  "{kernel_id}",
+  "--playbook",
+  "{playbook_version}",
+]

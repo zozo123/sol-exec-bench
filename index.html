@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -76,7 +76,7 @@
       <div class="hero-copy">
         <p class="eyebrow">FIELD NOTE 01 · GPU AGENT SYSTEMS · JULY 2026</p>
         <h1>One lab<br>per kernel.</h1>
-        <p class="dek">Databricks put KDA, Humanize, and Omnigent on NVIDIA’s L1 leaderboard and reached the top. The result gives us a practical blueprint for a persistent, reviewable kernel-research campaign on Islo.</p>
+        <p class="dek">Databricks put KDA, Humanize, and Omnigent on NVIDIA’s L1 leaderboard and reached the top. The public disclosure is brief, but it identifies an agent stack worth testing inside a persistent, reviewable Islo campaign.</p>
         <div class="byline">
           <span>Yossi Eliaz</span>
           <span>14 min read</span>
@@ -92,24 +92,24 @@
         <ol>
           <li class="bound"><span class="rank">—</span><strong>SOL bound</strong><code>1.000000</code></li>
           <li class="leader"><span class="rank">1</span><strong>Databricks</strong><code>0.751491</code></li>
-          <li><span class="rank">2</span><strong>ac4k</strong><code>0.751196</code></li>
-          <li><span class="rank">3</span><strong>Amir M. Mir</strong><code>0.726700</code></li>
-          <li><span class="rank">4</span><strong>doubleAI</strong><code>0.726542</code></li>
-          <li><span class="rank">5</span><strong>Recursive</strong><code>0.702958</code></li>
-          <li><span class="rank">6</span><strong>Cursor</strong><code>0.540380</code></li>
+          <li><span class="rank">2</span><strong>ac4k</strong><code>0.751474</code></li>
+          <li><span class="rank">3</span><strong>Hyra</strong><code>0.746473</code></li>
+          <li><span class="rank">4</span><strong>Amir M. Mir · SF Tensor</strong><code>0.742118</code></li>
+          <li><span class="rank">5</span><strong>doubleAI</strong><code>0.726542</code></li>
+          <li><span class="rank">6</span><strong>Recursive</strong><code>0.702958</code></li>
           <li class="baseline"><span class="rank">—</span><strong>Scoring baseline</strong><code>0.500000</code></li>
         </ol>
-        <p>Official leaderboard snapshot, 28 Jul 2026. Scores move as the evaluation stack evolves.</p>
+        <p>Official B200 / v1.1 API snapshot, 28 Jul 2026 at 14:02 IDT. Scores can change after publication.</p>
       </aside>
     </section>
 
     <section class="opening">
-      <div class="opening-number" aria-hidden="true">0.000295</div>
+      <div class="opening-number" aria-hidden="true">0.000017</div>
       <div class="opening-copy">
-        <p class="lead">That is the distance between first and second place across a collection of 94 kernels.</p>
-        <p>At this margin, the system around the model matters at the level of individual trials. A single failed workload, an unstable measurement, or a B200 hour spent repeating a dead idea can change the collection score.</p>
-        <p>Databricks disclosed a compact stack: <a href="https://github.com/mit-han-lab/kernel-design-agents">KDA</a> supplies the kernel workflow; <a href="https://github.com/PolyArch/humanize">Humanize</a> runs the iterative implementation and review protocol; <a href="https://github.com/omnigent-ai/omnigent">Omnigent</a> coordinates harnesses; Claude implements; Codex reviews. The team gave these agents enough structure to work autonomously for long stretches.</p>
-        <p>This field note turns that disclosure into an Islo system design. It separates capabilities already available from the small amount of integration work still required. It also defines the evidence the first campaign should return.</p>
+        <p class="lead">That is the displayed distance between first and second place across a collection of 94 kernels.</p>
+        <p>NVIDIA computes the collection score as an arithmetic mean of per-kernel scores. At the displayed precision, improving one kernel by roughly 0.0016 would cover this gap if every other score stayed fixed. Trial selection, verification, and measurement discipline can decide the order.</p>
+        <p>Databricks disclosed the components and the writer–reviewer split, not the internal architecture, prompts, budgets, or evaluator. The public projects suggest a plausible division of labor: <a href="https://github.com/mit-han-lab/kernel-design-agents">KDA</a> defines a kernel-research workflow; <a href="https://github.com/PolyArch/humanize">Humanize</a> provides iterative Claude implementation with independent Codex review; <a href="https://github.com/omnigent-ai/omnigent">Omnigent</a> provides a common orchestration layer across agent harnesses.</p>
+        <p>This field note turns those public interfaces into an Islo design. It marks the platform capabilities available today, the integrations that still need qualification, and the systems that must be built before anyone can claim an Islo benchmark result.</p>
       </div>
     </section>
 
@@ -179,71 +179,71 @@
               </div>
               <div class="signal-evidence">
                 <strong>Durable writer–reviewer loop</strong>
-                <p>KDA, Humanize, and Omnigent combined Claude implementation with independent Codex review. The current public L1 leaderboard shows Databricks first at 0.751491.</p>
+                <p>Databricks named KDA, Humanize, and Omnigent, with Claude writing code and Codex reviewing. The 28 July B200 / v1.1 snapshot shows Databricks first at 0.751491.</p>
               </div>
               <p class="signal-lesson">Long-horizon work benefits from explicit roles, state on disk, and a review gate that can reject completion.</p>
             </div>
           </div>
 
-          <aside class="margin-note">
+          <aside class="margin-note" aria-label="Leaderboard disclosure">
             <span>RESEARCH HYGIENE</span>
-            <p>ac4k and Amir M. Mir / SF Tensor also sit near the top of L1. Their leaderboard positions are public; their internal architectures are not. This design does not infer systems from names or scores.</p>
+            <p>ac4k, Hyra, and Amir M. Mir / SF Tensor also sit near the top of L1. Their leaderboard positions are public; their internal architectures are not. This design does not infer systems from names or scores.</p>
           </aside>
         </section>
 
         <section id="inventory" class="article-section">
           <p class="section-index">02 / INVENTORY</p>
-          <h2>The infrastructure is mostly here</h2>
-          <p class="section-intro">Islo already exposes the execution primitives behind the loop. The first version needs a B200 evaluator adapter and a campaign scheduler; the agent runtime itself can be assembled from current capabilities.</p>
+          <h2>The control plane is largely available</h2>
+          <p class="section-intro">Islo exposes the CPU agent-runtime and orchestration primitives behind the loop. Its <a href="https://docs.islo.dev/concepts/automations">public job schema</a> exposes vCPUs, memory, disk, snapshots, and lifecycle controls, with no GPU resource field as of 28 July 2026. A credible implementation therefore adds a hardened B200 evaluation service and a campaign controller. Building and qualifying those systems is substantial engineering work.</p>
 
           <div class="inventory">
             <div class="inventory-item">
               <span class="status current">CURRENT</span>
               <h3>Persistent isolated computers</h3>
-              <p>One microVM per kernel preserves repositories, compiler caches, Humanize state, failed attempts, and profiler artifacts across disconnects.</p>
+              <p>The campaign can keep one logical workspace per kernel. Active microVMs remain bounded by the Islo team quota; <a href="https://docs.islo.dev/concepts/sandbox-lifecycle">paused sandboxes</a> retain their filesystem while releasing compute.</p>
             </div>
             <div class="inventory-item">
-              <span class="status current">CURRENT</span>
-              <h3>Claude and Codex harnesses</h3>
-              <p>Both agents run natively. Omnigent can sit above them for shared sessions, harness switching, monitoring, and human intervention.</p>
+              <span class="status add">VALIDATE</span>
+              <h3>Agent stack</h3>
+              <p><a href="https://docs.islo.dev/cli/agent-integration">Islo’s default image</a> includes Claude Code and Codex CLI. KDA documents Humanize installation, and <a href="https://github.com/omnigent-ai/omnigent">Omnigent upstream</a> explicitly lists Islo as a cloud-sandbox provider. This exact KDA + Humanize + Omnigent combination still needs an end-to-end pilot.</p>
             </div>
             <div class="inventory-item">
               <span class="status current">CURRENT</span>
               <h3>Durable parameterized jobs</h3>
-              <p>Jobs provide versioned manifests, typed parameters, timeouts, concurrency, lifecycle policies, logs, and repeatable execution.</p>
+              <p>Jobs provide versioned manifests, typed parameters, timeouts, fanout, concurrency, lifecycle policies, status, and logs.</p>
             </div>
             <div class="inventory-item">
               <span class="status current">CURRENT</span>
               <h3>Snapshots</h3>
-              <p>Every experiment can start from the same pinned KDA, Humanize, Omnigent, toolchain, dataset, prompt, and playbook version.</p>
+              <p>A snapshot can pin the lab filesystem: toolchain, checked-out commits, prompts, and playbook. The external evaluator image, dataset revision, and GPU configuration must be versioned separately.</p>
             </div>
             <div class="inventory-item">
               <span class="status current">CURRENT</span>
               <h3>Scoped gateways</h3>
-              <p>Host, path, method, response filter, rate, and credential rules give the sandbox access to model APIs and the evaluator without exposing secrets.</p>
+              <p><a href="https://docs.islo.dev/cli/gateways">Host, path, method, response filter, rate, and credential rules</a> give the sandbox access to model APIs and the evaluator without exposing secrets.</p>
             </div>
             <div class="inventory-item">
               <span class="status current">CURRENT</span>
               <h3>Audit and replay</h3>
-              <p>Agent sessions and commands remain inspectable. Candidate manifests connect model activity to evaluator evidence.</p>
+              <p>Islo logs expose agent sessions and executed commands. The proposed campaign ledger adds the missing link from those records to candidate hashes and evaluator receipts.</p>
             </div>
             <div class="inventory-item">
               <span class="status add">ADD</span>
-              <h3>B200 evaluator adapter</h3>
-              <p>The public Islo resource schema currently exposes CPU, memory, disk, snapshots, and lifecycle. A narrow API connects the labs to an external or BYOC B200 pool.</p>
+              <h3>Hardened B200 evaluation service</h3>
+              <p>An external or BYOC service must provision B200 capacity, isolate untrusted submissions, reproduce the pinned benchmark harness, queue work, store artifacts, and issue content-addressed receipts. The Islo gateway supplies the controlled HTTP path to it.</p>
             </div>
             <div class="inventory-item">
               <span class="status add">ADD</span>
-              <h3>Campaign scheduler</h3>
-              <p>A small service ranks queued experiments by expected collection-score gain per B200 minute and enforces campaign budgets.</p>
+              <h3>Campaign controller</h3>
+              <p>A controller maintains per-kernel state, ranks queued experiments by expected collection-score gain per B200 minute, enforces model and GPU budgets, and handles retry and stop policy.</p>
             </div>
           </div>
         </section>
 
         <section id="architecture" class="article-section wide-section">
           <p class="section-index">03 / SYSTEM DESIGN</p>
-          <h2>The CPU side thinks. The B200 side decides.</h2>
-          <p class="section-intro">The evaluator is a trust boundary. Agents can design any candidate within the task contract. Only the evaluator can issue a result eligible for promotion.</p>
+          <h2>Islo runs the research loop; B200s return verdicts</h2>
+          <p class="section-intro">This is a split-plane design. Islo hosts long-lived CPU workspaces, agents, jobs, policy, and logs. B200 capacity remains in a separately operated GPU service under the current public Islo schema. The evaluator is a trust boundary: agents can design any candidate within the task contract, while only the evaluator can issue promotion evidence.</p>
 
           <figure class="architecture" aria-labelledby="architecture-caption">
             <div class="arch-controller">
@@ -267,8 +267,8 @@
               </div>
               <div class="lab-node muted-node">
                 <span class="node-tag">ISLO LAB …</span>
-                <strong>up to 94 labs</strong>
-                <small>pause · resume · snapshot</small>
+                <strong>94 logical workspaces</strong>
+                <small>quota-bounded active set</small>
               </div>
             </div>
 
@@ -299,7 +299,7 @@
               <strong>Candidate ledger</strong>
               <small>source · environment · workloads · latency · variance · verdict · lineage</small>
             </div>
-            <figcaption id="architecture-caption">Agents own hypotheses and source code. The evaluator owns correctness, measurement, and promotion evidence.</figcaption>
+            <figcaption id="architecture-caption">Agents own hypotheses and source code. The evaluator owns correctness, measurement, and promotion evidence. Active Islo and B200 concurrency is bounded by account quota and GPU throughput.</figcaption>
           </figure>
 
           <div class="code-block">
@@ -307,7 +307,12 @@
               <span>jobs/sol-kernel/job.toml</span>
               <button type="button" data-copy="job-code">Copy</button>
             </div>
-            <pre id="job-code"><code>[job.params.kernel_id]
+            <pre id="job-code"><code>[job]
+name = "sol-kernel"
+version = "0.1.0"
+description = "Persistent CPU research workspace for one SOL-ExecBench kernel"
+
+[job.params.kernel_id]
 type = "string"
 required = true
 
@@ -322,20 +327,27 @@ teardown_on_complete = false
 [run.sandbox]
 mode = "ensure"
 name = "sol-l1-{kernel_id}"
+image = "ghcr.io/islo-labs/islo-runner:latest"
 snapshot_name = "sol-kda-b200-v1"
 gateway_profile = "sol-kda"
+init = { type = "full" }
 vcpus = 4
 memory_mb = 8192
 disk_gb = 40
+
+[run.sandbox.lifecycle]
+pause_after_idle = 1800
 
 [[run.tasks]]
 name = "optimize"
 
 [[run.tasks.steps]]
+name = "run-campaign"
 exec = ["./campaign/run-kernel",
         "--kernel", "{kernel_id}",
         "--playbook", "{playbook_version}"]</code></pre>
           </div>
+          <p class="manifest-note">Schema-valid manifest skeleton, checked against the current Islo CLI. The snapshot, gateway profile, and campaign command are project dependencies that still have to be created.</p>
         </section>
 
         <section id="candidate" class="article-section">
@@ -361,13 +373,13 @@ exec = ["./campaign/run-kernel",
             </li>
             <li>
               <span>04</span>
-              <div><strong>Run correctness first</strong><p>All public and hidden workloads, fresh seeds, numerical checks, fallback coverage, and output sanity.</p></div>
-              <code>verdict.json</code>
+              <div><strong>Run local correctness first</strong><p>Published workloads, generated seeds, numerical checks, fallback coverage, and output sanity remain available for fast iteration.</p></div>
+              <code>local-verdict.json</code>
             </li>
             <li>
               <span>05</span>
-              <div><strong>Measure reproducibly</strong><p>Warmups, repeated trials, cache clearing, locked clocks, identical ABI, and measurement variance.</p></div>
-              <code>benchmark.json</code>
+              <div><strong>Request promotion evidence</strong><p>The trusted service reruns the candidate in a clean environment against withheld cases, then measures correct candidates with pinned warmups, trials, cache policy, clocks, and ABI.</p></div>
+              <code>evaluator-receipt.json</code>
             </li>
             <li>
               <span>06</span>
@@ -431,7 +443,7 @@ exec = ["./campaign/run-kernel",
             </div>
           </div>
 
-          <p>The agent can inspect failures and iterate. It cannot inspect hidden inputs, alter evaluator code, select favorable trials, or publish its own score. Each promotion receipt includes the evaluator version and content hash so a later campaign can reproduce the verdict.</p>
+          <p>During search, agents can use the public verifier and generate their own randomized tests. Promotion inputs stay withheld. The service returns a bounded verdict rather than hidden tensors, rate-limits promotion attempts, and reserves a final quarantine suite for one-time confirmation. Each receipt includes the evaluator version and content hash so a later campaign can reconstruct the verdict.</p>
         </section>
 
         <section id="scheduling" class="article-section">
@@ -445,7 +457,7 @@ exec = ["./campaign/run-kernel",
             <span class="fraction"><b>expected Δ collection SOL</b><i></i><b>expected B200 minutes</b></span>
           </div>
 
-          <p>Coverage comes first. A failed kernel contributes zero to the collection average; even a baseline-level correct kernel contributes roughly 0.5. Once every task has a defensible candidate, the scheduler shifts toward measured marginal gain.</p>
+          <p>Coverage comes first. A failed kernel contributes zero. Replacing that zero with a baseline-level per-kernel score of 0.5 raises the 94-kernel L1 collection score by approximately 0.005319. Once every task has a defensible candidate, the scheduler shifts toward measured marginal gain.</p>
 
           <p>A kernel near its analytical bound may justify one carefully targeted experiment. A kernel with large headroom and a clear NCU signal may justify ten. A kernel whose last five distinct hypotheses produced noise should pause and release its budget.</p>
 
@@ -486,7 +498,7 @@ exec = ["./campaign/run-kernel",
 
           <div class="lesson-card">
             <div class="lesson-head">
-              <span>VERIFIED LESSON</span>
+              <span>ILLUSTRATIVE LESSON RECORD</span>
               <span>normalization / B200 / BF16</span>
             </div>
             <dl>
@@ -500,15 +512,16 @@ exec = ["./campaign/run-kernel",
 
           <p>A curator proposes a new playbook from these lessons. Promotion requires an A/B campaign from identical Islo snapshots on held-out kernels, with equal model and GPU budgets. A stronger playbook must improve correctness, collection SOL, or cost efficiency without increasing verifier failures.</p>
 
-          <div class="promotion-loop" aria-label="Playbook promotion sequence">
-            <div><b>v17</b><span>current playbook</span></div>
+          <div class="promotion-loop" role="group" aria-label="Playbook promotion sequence">
+            <div><b>vN</b><span>current playbook</span></div>
             <span aria-hidden="true">→</span>
             <div><b>Δ</b><span>verified lessons</span></div>
             <span aria-hidden="true">→</span>
             <div><b>A/B</b><span>held-out kernels</span></div>
             <span aria-hidden="true">→</span>
-            <div class="promote"><b>v18</b><span>promote or reject</span></div>
+            <div class="promote"><b>vN+1</b><span>promote or reject</span></div>
           </div>
+          <p class="manifest-note">The lesson record and version sequence are illustrative design artifacts, not outputs from an Islo campaign.</p>
         </section>
 
         <section id="campaign" class="article-section campaign-section">
@@ -564,7 +577,7 @@ exec = ["./campaign/run-kernel",
           <div class="closing">
             <p class="closing-small">THE BUILD</p>
             <p class="closing-line">One persistent lab per kernel.<br>One trusted B200 verdict per candidate.<br>One playbook that earns every upgrade.</p>
-            <p>Islo already has the computers, jobs, snapshots, gateways, harness access, and audit trail. The first implementation adds the evaluator adapter and the campaign scheduler, then measures the complete loop on eight kernels.</p>
+            <p>Islo supplies the persistent computers, jobs, snapshots, native Claude and Codex access, gateways, and logs needed for the agent control plane. Omnigent’s upstream Islo support makes the integration concrete, although this exact stack remains unqualified. The first implementation must build the hardened B200 evaluation service and campaign controller, then test the complete loop on eight kernels.</p>
             <div class="closing-actions">
               <a class="primary-action" href="https://islo.dev/">Explore Islo <span aria-hidden="true">↗</span></a>
               <a href="https://github.com/zozo123/sol-exec-bench">Read the source <span aria-hidden="true">↗</span></a>
@@ -585,7 +598,11 @@ exec = ["./campaign/run-kernel",
             <li><a href="https://cursor.com/blog/multi-agent-kernels">Cursor — Speeding up GPU kernels by 38% with a multi-agent system</a></li>
             <li><a href="https://www.doubleai.com/research/warpspeed-approaches-speed-of-light-on-blackwell">doubleAI — WarpSpeed approaches Speed of Light on Blackwell</a></li>
             <li><a href="https://www.recursive.com/articles/first-steps-toward-automated-ai-research">Recursive — First Steps Toward Automated AI Research</a></li>
+            <li><a href="https://docs.islo.dev/overview">Islo — persistent hardware-isolated sandboxes</a></li>
+            <li><a href="https://docs.islo.dev/cli/agent-integration">Islo — Claude Code and Codex agent integration</a></li>
             <li><a href="https://docs.islo.dev/concepts/automations">Islo — durable jobs and automations</a></li>
+            <li><a href="https://docs.islo.dev/concepts/sandbox-lifecycle">Islo — pause, resume, and lifecycle behavior</a></li>
+            <li><a href="https://docs.islo.dev/cli/sandbox-commands">Islo — pause, resume, snapshots, and logs</a></li>
             <li><a href="https://docs.islo.dev/cli/gateways">Islo — scoped gateways and credential injection</a></li>
           </ol>
           <p class="disclosure">This article proposes an implementation. It does not claim an Islo SOL-ExecBench run or benchmark result. Reported third-party numbers retain their original scope and date.</p>

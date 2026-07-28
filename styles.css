@@ -686,6 +686,13 @@ pre {
   line-height: 1.65;
 }
 
+.manifest-note {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
 .lifecycle {
   margin: 0;
   padding: 0;
