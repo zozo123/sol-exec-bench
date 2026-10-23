@@ -316,9 +316,13 @@ a {
 }
 
 .article-grid {
+  --grid-gap: clamp(45px, 7vw, 110px);
+  /* Room right of the 780px column, used by full-bleed panels. */
+  --breakout: max(0px, (100cqw - 1030px - var(--grid-gap)) / 2);
+  container-type: inline-size;
   display: grid;
   grid-template-columns: minmax(170px, 250px) minmax(0, 780px);
-  gap: clamp(45px, 7vw, 110px);
+  gap: var(--grid-gap);
   justify-content: center;
   padding: 0 clamp(22px, 5vw, 80px);
 }
@@ -517,7 +521,7 @@ article {
 }
 
 .wide-section {
-  width: min(1040px, calc(100vw - 44px));
+  width: min(1040px, calc(100% + var(--breakout)));
 }
 
 .architecture {
@@ -1059,7 +1063,7 @@ pre {
 }
 
 .closing {
-  width: min(960px, calc(100vw - 44px));
+  width: min(960px, calc(100% + var(--breakout)));
   margin-top: 90px;
   padding: clamp(36px, 6vw, 74px);
   color: var(--panel-ink);
