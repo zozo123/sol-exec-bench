@@ -1200,10 +1200,12 @@ footer a {
   }
 
   .top-cta {
-    font-size: 0;
-  }
-
-  .top-cta span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35em;
+    min-width: 44px;
+    min-height: 44px;
     font-size: 13px;
   }
 

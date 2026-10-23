@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <pattern id="rules" width="1200" height="28" patternUnits="userSpaceOnUse">
+      <rect width="1200" height="1" fill="#10110f" fill-opacity="0.05"/>
+    </pattern>
+    <radialGradient id="glow" cx="150" cy="150" r="380" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#99c63c" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#99c63c" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- paper -->
+  <rect width="1200" height="630" fill="#f3f1e9"/>
+  <rect width="1200" height="630" fill="url(#rules)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <!-- left column -->
+  <g font-family="IBM Plex Mono, Menlo, monospace" font-weight="600" font-size="17" letter-spacing="2.6" fill="#557713">
+    <circle cx="80" cy="84" r="7" fill="#99c63c"/>
+    <circle cx="80" cy="84" r="12" fill="#99c63c" fill-opacity="0.2"/>
+    <text x="104" y="90">FIELD NOTE 01 · GPU AGENT SYSTEMS</text>
+  </g>
+
+  <g font-family="Manrope, Avenir Next, Helvetica Neue, sans-serif" font-weight="800" font-size="128" letter-spacing="-7" fill="#10110f">
+    <text x="66" y="236">One lab</text>
+    <text x="66" y="350">per kernel.</text>
+  </g>
+
+  <text x="72" y="424" font-family="Newsreader, Charter, Georgia, serif" font-size="34" fill="#383a34">SOL-ExecBench on Islo · design proposal</text>
+
+  <rect x="72" y="486" width="560" height="1" fill="#cbc8bc"/>
+  <g font-family="IBM Plex Mono, Menlo, monospace">
+    <text x="72" y="530" font-size="24" font-weight="600" letter-spacing="1" fill="#10110f">Yossi Eliaz</text>
+    <text x="72" y="564" font-size="17" letter-spacing="0.6" fill="#626358">zozo123.github.io/sol-exec-bench</text>
+  </g>
+
+  <!-- right panel: the page's split-plane diagram, labeled as proposed -->
+  <rect x="772" y="72" width="356" height="486" fill="#10110f" fill-opacity="0.08" transform="translate(12 12)"/>
+  <rect x="772" y="72" width="356" height="486" fill="#171915"/>
+  <g font-family="IBM Plex Mono, Menlo, monospace" font-size="12" letter-spacing="1.6">
+    <text x="796" y="104" fill="#8a8a7e">PROPOSED · SPLIT-PLANE DESIGN</text>
+    <rect x="772" y="120" width="356" height="1" fill="#f5f3ea" fill-opacity="0.12"/>
+
+    <!-- controller -->
+    <rect x="796" y="142" width="308" height="52" fill="none" stroke="#f5f3ea" stroke-opacity="0.35"/>
+    <text x="812" y="163" fill="#99c63c">CONTROL</text>
+    <text x="812" y="183" font-size="14" letter-spacing="0.4" fill="#f5f3ea">Campaign controller</text>
+
+    <path d="M950 194v20" stroke="#99c63c" stroke-width="2"/>
+
+    <!-- labs -->
+    <g fill="none" stroke="#f5f3ea" stroke-opacity="0.35">
+      <rect x="796" y="214" width="96" height="62"/>
+      <rect x="902" y="214" width="96" height="62"/>
+      <rect x="1008" y="214" width="96" height="62" stroke-dasharray="4 4"/>
+    </g>
+    <text x="808" y="238" fill="#6ca5bb">ISLO LAB</text>
+    <text x="808" y="260" font-size="14" letter-spacing="0.4" fill="#f5f3ea">011</text>
+    <text x="914" y="238" fill="#6ca5bb">ISLO LAB</text>
+    <text x="914" y="260" font-size="14" letter-spacing="0.4" fill="#f5f3ea">013</text>
+    <text x="1020" y="238" fill="#8a8a7e">ISLO LAB</text>
+    <text x="1020" y="260" font-size="14" letter-spacing="0.4" fill="#8a8a7e">…</text>
+
+    <path d="M844 276v20M950 276v20M1056 276v20M844 296h212M950 296v18" fill="none" stroke="#99c63c" stroke-width="2"/>
+
+    <!-- gateway -->
+    <rect x="796" y="314" width="308" height="34" fill="#20231d"/>
+    <text x="950" y="336" text-anchor="middle" fill="#f5f3ea">ISLO GATEWAY</text>
+
+    <path d="M950 348v22" stroke="#99c63c" stroke-width="2"/>
+
+    <!-- evaluator -->
+    <rect x="796" y="370" width="308" height="76" fill="none" stroke="#99c63c" stroke-width="2"/>
+    <text x="812" y="394" fill="#99c63c">TRUSTED GPU PLANE · TO BUILD</text>
+    <text x="812" y="418" font-size="16" letter-spacing="0.4" fill="#f5f3ea">B200 evaluator pool</text>
+    <text x="812" y="436" font-size="11" letter-spacing="0.6" fill="#8a8a7e">compile → correct → benchmark</text>
+
+    <path d="M950 446v22" stroke="#99c63c" stroke-width="2"/>
+
+    <!-- ledger -->
+    <rect x="796" y="468" width="308" height="54" fill="none" stroke="#f5f3ea" stroke-opacity="0.35"/>
+    <text x="812" y="490" fill="#e3a128">DURABLE EVIDENCE</text>
+    <text x="812" y="511" font-size="14" letter-spacing="0.4" fill="#f5f3ea">Candidate ledger</text>
+
+    <text x="796" y="546" font-size="11" letter-spacing="0.8" fill="#8a8a7e">Not yet run. Proposal only.</text>
+  </g>
+</svg>
